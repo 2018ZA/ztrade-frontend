@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Toolbar } from '../components/Toolbar';
 import { StatsBar } from '../components/StatsBar';
+import { SignalLegend } from '../components/SignalLegend';
 import { CandlestickChart } from '../components/CandlestickChart';
 import { useChartData } from '../hooks/useChartData';
 import { DEFAULT_SYMBOL } from '../lib/symbols';
@@ -56,6 +57,8 @@ export function ChartPage() {
           lastChange={lastChange}
         />
       )}
+
+      <SignalLegend />
 
       <div className={'card' + (loading ? ' card--loading' : '')}>
         {data && <CandlestickChart points={data.points} />}

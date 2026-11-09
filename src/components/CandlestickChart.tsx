@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   createChart,
   createSeriesMarkers,
@@ -15,8 +15,11 @@ import {
   type HistogramData,
   type SeriesMarker,
   type Time,
+  type MouseEventParams,
 } from 'lightweight-charts';
 import { CHART_COLORS } from '../lib/chartTheme';
+import { SIGNAL_META } from '../lib/signals';
+import { ChartTooltip } from './ChartTooltip';
 import type { ChartPoint, Signal } from '../types';
 
 interface Props {
@@ -24,21 +27,15 @@ interface Props {
   height?: number;
 }
 
+interface TooltipState {
+  x: number;
+  y: number;
+  point: ChartPoint;
+}
+
 function signalColor(s: Signal): string {
-  switch (s) {
-    case 'buy':
-      return CHART_COLORS.bull;
-    case 'strong buy':
-      return CHART_COLORS.strongBuy;
-    case 'sell':
-      return CHART_COLORS.bear;
-    case 'strong sell':
-      return CHART_COLORS.strongSell;
-    case 'neutral':
-      return CHART_COLORS.neutral;
-    default:
-      return CHART_COLORS.neutral;
-  }
+  if (!s) return CHART_COLORS.neutral;
+  return SIGNAL_META[s].color;
 }
 
 function signalPosition(s: Signal): 'aboveBar' | 'belowBar' | 'inBar' {
@@ -47,20 +44,16 @@ function signalPosition(s: Signal): 'aboveBar' | 'belowBar' | 'inBar' {
   return 'inBar';
 }
 
-function signalShape(s: Signal): 'circle' | 'arrowUp' | 'arrowDown' {
-  if (s === 'strong buy') return 'arrowUp';
-  if (s === 'strong sell') return 'arrowDown';
-  return 'circle';
-}
-
 export function CandlestickChart({ points, height = 520 }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const candleRef = useRef<ISeriesApi<'Candlestick'> | null>(null);
   const volumeRef = useRef<ISeriesApi<'Histogram'> | null>(null);
-  // В v5 маркеры управляются отдельным плагином
   const markersRef = useRef<ISeriesMarkersPluginApi<Time> | null>(null);
+  const pointMapRef = useRef<Map<number, ChartPoint>>(new Map());
+  const [tooltip, setTooltip] = useState<TooltipState | null>(null);
 
+  // ---------- Инициализация графика (один раз) ----------
   useEffect(() => {
     if (!containerRef.current) return;
 
@@ -131,13 +124,35 @@ export function CandlestickChart({ points, height = 520 }: Props) {
     });
     volume.priceScale().applyOptions({ scaleMargins: { top: 0.82, bottom: 0 } });
 
-    // v5: маркеры — отдельный плагин
     const markersPlugin = createSeriesMarkers(candle, []);
 
     chartRef.current = chart;
     candleRef.current = candle;
     volumeRef.current = volume;
     markersRef.current = markersPlugin;
+
+    // ---------- Tooltip на hover ----------
+    chart.subscribeCrosshairMove((param: MouseEventParams<Time>) => {
+      if (
+        !param.point ||
+        !param.time ||
+        param.point.x < 0 ||
+        param.point.y < 0
+      ) {
+        setTooltip(null);
+        return;
+      }
+      if (typeof param.time !== 'number') {
+        setTooltip(null);
+        return;
+      }
+      const point = pointMapRef.current.get(param.time);
+      if (!point) {
+        setTooltip(null);
+        return;
+      }
+      setTooltip({ x: param.point.x, y: param.point.y, point });
+    });
 
     return () => {
       chart.remove();
@@ -148,6 +163,7 @@ export function CandlestickChart({ points, height = 520 }: Props) {
     };
   }, []);
 
+  // ---------- Данные ----------
   useEffect(() => {
     if (!candleRef.current || !volumeRef.current || !chartRef.current) return;
 
@@ -155,6 +171,7 @@ export function CandlestickChart({ points, height = 520 }: Props) {
       candleRef.current.setData([]);
       volumeRef.current.setData([]);
       markersRef.current?.setMarkers([]);
+      pointMapRef.current = new Map();
       return;
     }
 
@@ -178,26 +195,65 @@ export function CandlestickChart({ points, height = 520 }: Props) {
     candleRef.current.setData(candleData);
     volumeRef.current.setData(volumeData);
 
+    // lookup-таблица для tooltip
+    const map = new Map<number, ChartPoint>();
+    points.forEach((p) => map.set(Math.floor(p.timestamp / 1000), p));
+    pointMapRef.current = map;
+
+    // ---------- Маркеры: только круги, без текста ----------
     const markers: SeriesMarker<Time>[] = points
       .filter((p) => p.is_filtered_signal && p.signal)
-      .map((p) => ({
-        time: Math.floor(p.timestamp / 1000) as UTCTimestamp,
-        position: signalPosition(p.signal),
-        color: signalColor(p.signal),
-        shape: signalShape(p.signal),
-        text: p.signal?.toUpperCase(),
-        size: p.signal?.startsWith('strong') ? 2 : 1,
-      }));
+      .map((p) => {
+        const isStrong =
+          p.signal === 'strong buy' || p.signal === 'strong sell';
+        return {
+          time: Math.floor(p.timestamp / 1000) as UTCTimestamp,
+          position: signalPosition(p.signal),
+          color: signalColor(p.signal),
+          shape: 'circle' as const,
+          text: '',                          // ← без подписи
+          size: isStrong ? 2 : 1,            // ← strong крупнее
+        };
+      });
 
     markersRef.current?.setMarkers(markers);
     chartRef.current.timeScale().fitContent();
   }, [points]);
+
+  // ---------- Позиционирование tooltip с флипом ----------
+  let tooltipLeft = 0;
+  let tooltipTop = 0;
+  if (tooltip && containerRef.current) {
+    const chartWidth = containerRef.current.clientWidth;
+    const tooltipWidth = Math.min(230, chartWidth - 32);
+    const tooltipHeight = 240;
+    const offset = 16;
+
+    const wouldOverflowRight =
+      tooltip.x + offset + tooltipWidth > chartWidth;
+    tooltipLeft = wouldOverflowRight
+      ? Math.max(8, tooltip.x - offset - tooltipWidth)
+      : tooltip.x + offset;
+
+    tooltipTop = Math.max(
+      8,
+      Math.min(tooltip.y - 40, height - tooltipHeight - 8),
+    );
+  }
 
   return (
     <div className="chart-wrap" style={{ height }}>
       <div ref={containerRef} className="chart-canvas" />
       {points.length === 0 && (
         <div className="chart-empty">Нет данных за выбранный период</div>
+      )}
+      {tooltip && (
+        <div
+          className="chart-tooltip-wrapper"
+          style={{ left: tooltipLeft, top: tooltipTop }}
+        >
+          <ChartTooltip point={tooltip.point} />
+        </div>
       )}
     </div>
   );

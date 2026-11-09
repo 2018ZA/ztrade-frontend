@@ -328,3 +328,160 @@ button, select, input {
   .placeholder { padding: 40px 16px; }
   .placeholder__title { font-size: 17px; }
 }
+
+/* ============================================================
+   Signal Legend
+   ============================================================ */
+.signal-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 12px;
+}
+
+.signal-legend__title {
+  color: var(--text-dim);
+  text-transform: uppercase;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  margin-right: 4px;
+}
+
+.signal-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: help;
+}
+
+.signal-legend__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: transform 0.15s;
+}
+
+.signal-legend__item:hover .signal-legend__dot {
+  transform: scale(1.25);
+}
+
+.signal-legend__label {
+  color: var(--text);
+  font-weight: 500;
+}
+
+@media (max-width: 480px) {
+  .signal-legend {
+    gap: 10px;
+    font-size: 11px;
+    padding: 8px 10px;
+  }
+  .signal-legend__label {
+    display: none; /* на узких экранах — только точки */
+  }
+  .signal-legend__dot {
+    width: 12px;
+    height: 12px;
+  }
+}
+
+/* ============================================================
+   Chart Tooltip (hover)
+   ============================================================ */
+.chart-tooltip-wrapper {
+  position: absolute;
+  z-index: 20;
+  pointer-events: none;
+}
+
+.chart-tooltip {
+  min-width: 190px;
+  max-width: 240px;
+  padding: 10px 12px;
+  background: rgba(19, 26, 35, 0.97);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  color: var(--text);
+  font-size: 12px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.chart-tooltip__date {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+  font-variant-numeric: tabular-nums;
+}
+
+.chart-tooltip__rows {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-family: var(--mono);
+  font-size: 11px;
+}
+
+.chart-tooltip__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.chart-tooltip__key {
+  color: var(--text-dim);
+  font-weight: 600;
+  min-width: 16px;
+}
+
+.chart-tooltip__val {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.chart-tooltip__row--change.is-up .chart-tooltip__val   { color: var(--bull); }
+.chart-tooltip__row--change.is-down .chart-tooltip__val { color: var(--bear); }
+
+.chart-tooltip__signal {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.chart-tooltip__signal-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.chart-tooltip__signal-label {
+  font-weight: 700;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.chart-tooltip__signal-score {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  padding: 1px 6px;
+  background: var(--surface-2);
+  border-radius: 4px;
+}
