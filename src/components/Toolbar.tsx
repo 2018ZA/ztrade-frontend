@@ -7,6 +7,10 @@ const PERIODS: { id: Period; label: string }[] = [
   { id: '6h',  label: '6 ч' },
   { id: '12h', label: '12 ч' },
   { id: '1d',  label: '1 д' },
+  { id: '2d',  label: '2 д' },
+  { id: '7d',  label: '7 д' },
+  { id: '30d', label: 'Мес' },
+  { id: 'all', label: 'Всё' },
 ];
 
 const SIGNALS: { id: Exclude<Signal, null>; label: string }[] = [

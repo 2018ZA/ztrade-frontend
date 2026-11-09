@@ -8,7 +8,9 @@ export type Signal =
   | 'neutral'
   | null;
 
-export type Period = '1h' | '4h' | '6h' | '12h' | '1d';
+export type Period =
+  | '1h' | '4h' | '6h' | '12h' | '1d'
+  | '2d' | '7d' | '30d' | 'all';
 
 export interface ChartPoint {
   timestamp: number;          // Unix ms
