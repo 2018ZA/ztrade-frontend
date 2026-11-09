@@ -39,23 +39,23 @@ export function ChartTooltip({ point }: ChartTooltipProps) {
 
       <div className="chart-tooltip__rows">
         <div className="chart-tooltip__row">
-          <span className="chart-tooltip__key">O</span>
+          <span className="chart-tooltip__key">Open</span>
           <span className="chart-tooltip__val">{fmtPrice(point.open)}</span>
         </div>
         <div className="chart-tooltip__row">
-          <span className="chart-tooltip__key">H</span>
+          <span className="chart-tooltip__key">High</span>
           <span className="chart-tooltip__val">{fmtPrice(point.high)}</span>
         </div>
         <div className="chart-tooltip__row">
-          <span className="chart-tooltip__key">L</span>
+          <span className="chart-tooltip__key">Low</span>
           <span className="chart-tooltip__val">{fmtPrice(point.low)}</span>
         </div>
         <div className="chart-tooltip__row">
-          <span className="chart-tooltip__key">C</span>
+          <span className="chart-tooltip__key">Close</span>
           <span className="chart-tooltip__val">{fmtPrice(point.close)}</span>
         </div>
         <div className="chart-tooltip__row">
-          <span className="chart-tooltip__key">V</span>
+          <span className="chart-tooltip__key">Volume</span>
           <span className="chart-tooltip__val">{fmtVolume(point.volume)}</span>
         </div>
         <div
@@ -64,7 +64,7 @@ export function ChartTooltip({ point }: ChartTooltipProps) {
             (isUp ? 'is-up' : 'is-down')
           }
         >
-          <span className="chart-tooltip__key">Δ</span>
+          <span className="chart-tooltip__key">Change</span>
           <span className="chart-tooltip__val">
             {isUp ? '+' : ''}
             {change.toFixed(4)} ({changePct.toFixed(2)}%)

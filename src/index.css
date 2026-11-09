@@ -403,8 +403,8 @@ button, select, input {
 }
 
 .chart-tooltip {
-  min-width: 190px;
-  max-width: 240px;
+  min-width: 210px;
+  max-width: 260px;
   padding: 10px 12px;
   background: rgba(19, 26, 35, 0.97);
   border: 1px solid var(--border-strong);
@@ -442,12 +442,15 @@ button, select, input {
 .chart-tooltip__key {
   color: var(--text-dim);
   font-weight: 600;
-  min-width: 16px;
+  min-width: 56px;
+  flex-shrink: 0;
 }
 
 .chart-tooltip__val {
   color: var(--text);
   font-variant-numeric: tabular-nums;
+  font-family: var(--mono);
+  text-align: right;
 }
 
 .chart-tooltip__row--change.is-up .chart-tooltip__val   { color: var(--bull); }
