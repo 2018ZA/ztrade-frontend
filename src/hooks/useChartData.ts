@@ -29,7 +29,7 @@ export function useChartData({ symbol, period, signals }: UseChartDataArgs) {
     const ctrl = new AbortController();
     abortRef.current = ctrl;
 
-    setState((s) => ({ ...s, loading: true, error: null }));
+    setState({ data: null, loading: true, error: null });
 
     fetchChart({ symbol, period, signals, signal: ctrl.signal })
       .then((data) => {

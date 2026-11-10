@@ -24,6 +24,7 @@ import type { ChartPoint, Signal } from '../types';
 
 interface Props {
   points: ChartPoint[];
+  symbol: string;
   height?: number;
 }
 
@@ -44,7 +45,7 @@ function signalPosition(s: Signal): 'aboveBar' | 'belowBar' | 'inBar' {
   return 'inBar';
 }
 
-export function CandlestickChart({ points, height = 520 }: Props) {
+export function CandlestickChart({ points, symbol, height = 520 }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const candleRef = useRef<ISeriesApi<'Candlestick'> | null>(null);
@@ -57,6 +58,7 @@ export function CandlestickChart({ points, height = 520 }: Props) {
   useEffect(() => {
     if (!containerRef.current) return;
 
+    containerRef.current.innerHTML = '';
     const chart = createChart(containerRef.current, {
       autoSize: true,
       layout: {
@@ -73,6 +75,7 @@ export function CandlestickChart({ points, height = 520 }: Props) {
       rightPriceScale: {
         borderColor: CHART_COLORS.border,
         scaleMargins: { top: 0.1, bottom: 0.28 },
+        autoScale: true,
       },
       timeScale: {
         borderColor: CHART_COLORS.border,
@@ -161,7 +164,7 @@ export function CandlestickChart({ points, height = 520 }: Props) {
       volumeRef.current = null;
       markersRef.current = null;
     };
-  }, []);
+  }, [symbol]);
 
   // ---------- Данные ----------
   useEffect(() => {
@@ -192,11 +195,15 @@ export function CandlestickChart({ points, height = 520 }: Props) {
           : 'rgba(239,68,68,0.35)',
     }));
 
-    candleRef.current.setData(candleData);
+candleRef.current.setData(candleData);
     volumeRef.current.setData(volumeData);
 
-    // Принудительно включаем авто-масштабирование при смене данных
+    // Жесткий сброс масштаба при любых новых данных
+    chartRef.current.priceScale('right').applyOptions({ autoScale: true });
+    chartRef.current.priceScale('left').applyOptions({ autoScale: true });
     candleRef.current.priceScale().applyOptions({ autoScale: true });
+    chartRef.current.priceScale('right').applyOptions({ autoScale: true });
+    chartRef.current.priceScale('left').applyOptions({ autoScale: true });
 
 
     // lookup-таблица для tooltip
