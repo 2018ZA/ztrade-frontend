@@ -10,3 +10,14 @@ dist/
 *.tsbuildinfo
 vite.config.js
 vite.config.d.ts
+.env
+.env.backup
+*.bak
+*.log
+__pycache__/
+*.pyc
+venv/
+.venv/
+.idea/
+.vscode/
+.DS_Store
