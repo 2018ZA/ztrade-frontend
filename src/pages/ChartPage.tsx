@@ -61,7 +61,7 @@ export function ChartPage() {
       <SignalLegend />
 
       <div className={'card' + (loading ? ' card--loading' : '')}>
-        {data && <CandlestickChart points={data.points} />}
+        {data && <CandlestickChart key={symbol} points={data.points} />}
         {!data && !error && <div className="chart-wrap chart-wrap--loading">Загрузка…</div>}
         {loading && data && <div className="card__loader" />}
       </div>

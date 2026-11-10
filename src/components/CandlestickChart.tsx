@@ -195,6 +195,10 @@ export function CandlestickChart({ points, height = 520 }: Props) {
     candleRef.current.setData(candleData);
     volumeRef.current.setData(volumeData);
 
+    // Принудительно включаем авто-масштабирование при смене данных
+    candleRef.current.priceScale().applyOptions({ autoScale: true });
+
+
     // lookup-таблица для tooltip
     const map = new Map<number, ChartPoint>();
     points.forEach((p) => map.set(Math.floor(p.timestamp / 1000), p));
